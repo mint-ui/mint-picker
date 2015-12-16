@@ -1,6 +1,7 @@
 <template>
-  <div class="picker picker-3d" style="overflow: hidden;">
-    <div class="picker-model-inner picker-items">
+  <div class="picker" :class="{ 'picker-3d': rotateEffect }">
+    <div class="picker-toolbar" v-if="showToolbar"><slot></slot></div>
+    <div class="picker-items">
       <slots v-ref:slots></slots>
       <div class="picker-center-highlight"></div>
     </div>
@@ -8,6 +9,14 @@
 </template>
 
 <style>
+  .picker {
+    overflow: hidden;
+  }
+
+  .picker-toolbar {
+    height: 40px;
+  }
+
   .picker-items {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -20,106 +29,6 @@
     padding: 0;
     text-align: right;
     font-size: 24px;
-  }
-
-  .picker-items-col {
-    overflow: hidden;
-    position: relative;
-    max-height: 100%
-  }
-
-  .picker-items-col.picker-items-col-left {
-    text-align: left;
-  }
-
-  .picker-items-col.picker-items-col-center {
-    text-align: center;
-  }
-
-  .picker-items-col.picker-items-col-right {
-    text-align: right;
-  }
-
-  .picker-items-col.picker-items-col-divider {
-    color: #000;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    -webkit-align-items: center;
-    align-items: center
-  }
-
-  .picker-items-col-wrapper {
-    -webkit-transition-duration: 0.3s;
-    transition-duration: 0.3s;
-    -webkit-transition-timing-function: ease-out;
-    transition-timing-function: ease-out
-  }
-
-  .picker-items-col-wrapper.dragging,
-  .picker-items-col-wrapper.dragging .picker-item {
-    -webkit-transition-duration: 0s;
-    transition-duration: 0s;
-  }
-
-  .picker-item {
-    height: 36px;
-    line-height: 36px;
-    padding: 0 10px;
-    white-space: nowrap;
-    position: relative;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #707274;
-    left: 0;
-    top: 0;
-    width: 100%;
-    box-sizing: border-box;
-    -webkit-transition-duration: .3s;
-    transition-duration: .3s
-  }
-
-  .picker-items-col-absolute .picker-item {
-    position: absolute;
-  }
-
-  .picker-item.picker-item-far {
-    pointer-events: none
-  }
-
-  .picker-item.picker-selected {
-    color: #000;
-    -webkit-transform: translate3d(0, 0, 0) rotateX(0);
-    transform: translate3d(0, 0, 0) rotateX(0);
-  }
-
-  .picker-3d .picker-items {
-    overflow: hidden;
-    -webkit-perspective: 1200px;
-    perspective: 1200px
-  }
-
-  .picker-3d .picker-item,
-  .picker-3d .picker-items-col,
-  .picker-3d .picker-items-col-wrapper {
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d
-  }
-
-  .picker-3d .picker-items-col {
-    overflow: visible
-  }
-
-  .picker-3d .picker-item {
-    -webkit-transform-origin: center center;
-    transform-origin: center center;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transition-timing-function: ease-out;
-    transition-timing-function: ease-out
   }
 
   .picker-center-highlight {
@@ -139,7 +48,7 @@
     position: absolute;
     height: 1px;
     width: 100%;
-    background-color: #a8abb0;
+    background-color: #eaeaea;
     display: block;
     z-index: 15;
     -webkit-transform: scaleY(.5);
@@ -164,13 +73,16 @@
 <script type="text/ecmascript-6" lang="babel">
   export default {
     props: {
-      cols: {
+      slots: {
         type: Array
       },
-      values: {
-        default() {
-          return [];
-        }
+      showToolbar: {
+        type: Boolean,
+        default: true
+      },
+      visibleItemCount: {
+        type: Number,
+        default: 5
       },
       rotateEffect: {
         type: Boolean,
@@ -179,34 +91,30 @@
     },
 
     beforeCompile() {
-      var cols = this.cols || [];
+      var slots = this.slots || [];
       var values = this.values;
 
-      if (values.length !== cols.length) {
+      if (values.length !== slots.length) {
         values = this.values = [];
         var valueIndexCount = 0;
-        cols.forEach(function(col) {
-          if (!col.divider) {
-            col.valueIndex = valueIndexCount++;
-            values[col.valueIndex] = (col.values || [])[0];
+        slots.forEach(function(slot) {
+          if (!slot.divider) {
+            slot.valueIndex = valueIndexCount++;
+            values[slot.valueIndex] = (slot.values || [])[0];
           }
         });
       }
     },
 
-    data() {
-      return {};
-    },
-
     methods: {
       getSlot(slotIndex) {
-        var cols = this.cols || [];
+        var slots = this.slots || [];
         var count = 0;
         var target;
         var children = this.$refs.slots.$children;
 
-        cols.forEach(function(col, index) {
-          if (!col.divider) {
+        slots.forEach(function(slot, index) {
+          if (!slot.divider) {
             if (slotIndex === count) {
               target = children[index];
             }
@@ -228,21 +136,34 @@
         if (slot) {
           slot.value = value;
         }
+      },
+      getSlotValues(index) {
+        var slot = this.getSlot(index);
+        if (slot) {
+          return slot.values;
+        }
+        return null;
+      },
+      setSlotValues(index, values) {
+        var slot = this.getSlot(index);
+        if (slot) {
+          slot.values = values;
+        }
       }
     },
 
     events: {
       slotValueChange() {
-        this.$emit('valueschange', this, this.values);
+        this.$emit('change', this, this.values);
       }
     },
 
     computed: {
       values() {
-        var cols = this.cols || [];
+        var slots = this.slots || [];
         var values = [];
-        cols.forEach(function(col) {
-          if (!col.divider) values.push(col.value);
+        slots.forEach(function(slot) {
+          if (!slot.divider) values.push(slot.value);
         });
 
         return values;
@@ -257,18 +178,18 @@
         },
         created() {
           var parent = this.$parent;
-          var cols = parent.cols;
+          var slots = parent.slots;
           var values = parent.values;
           var template = '';
           var valueIndexCount = 0;
 
-          cols.forEach(function(col, index) {
-            if (!col.divider) {
-              values[valueIndexCount] = (col.values || [])[0];
-              template += `<picker-slot :values="$parent.cols[${index}].values || []" :flex="$parent.cols[${index}].flex" ${ parent.rotateEffect ? 'rotate-effect' : '' } :value.sync="$parent.values[${valueIndexCount}]"></picker-slot>`;
+          slots.forEach(function(slot, index) {
+            if (!slot.divider) {
+              values[valueIndexCount] = (slot.values || [])[0];
+              template += `<picker-slot :values="$parent.slots[${index}].values || []" :text-align="$parent.slots[${index}].textAlign || 'center'" :visible-item-count="$parent.visibleItemCount" :class-name="$parent.slots[${index}].className" :flex="$parent.slots[${index}].flex" :value.sync="$parent.values[${valueIndexCount}]"  ${ parent.rotateEffect ? 'rotate-effect' : '' } ></picker-slot>`;
               valueIndexCount++;
             } else {
-              template += `<picker-slot divider :content="$parent.cols[${index}].content"></picker-slot>`;
+              template += `<picker-slot divider :content="$parent.slots[${index}].content"></picker-slot>`;
             }
           });
 
