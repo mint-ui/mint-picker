@@ -149,6 +149,19 @@
         if (slot) {
           slot.values = values;
         }
+      },
+      getValues() {
+        return this.values;
+      },
+      setValues(values) {
+        var slotCount = this.slotCount;
+        values = values || [];
+        if (slotCount !== values.length) {
+          throw new Error('values length is not equal slot count.');
+        }
+        values.forEach((value, index) => {
+          this.setSlotValue(index, value);
+        });
       }
     },
 
@@ -167,6 +180,14 @@
         });
 
         return values;
+      },
+      slotCount() {
+        var slots = this.slots || [];
+        var result = 0;
+        slots.forEach(function(slot) {
+          if (!slot.divider) result++;
+        });
+        return result;
       }
     },
 

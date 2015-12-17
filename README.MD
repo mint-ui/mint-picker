@@ -65,7 +65,6 @@ Picker Options:
 | showToolbar | Boolean(default: true) show a toolbar on top of picker when showToolbar is true. |
 | visibleItemCount | Number(default: 5) visible item count of each slot. |
 | rotateEffect | Boolean(default: false) use rotate effect on picker item when rotateEffect is true. |
-| values | Array values of all slots except divider slots. This is not a prop, just a readonly property. |
 
 Picker Methods:
 
@@ -73,6 +72,8 @@ Picker Methods:
 - setSlotValue(index, value): set the value of specific slot.
 - getSlotValues(index): get the values of specific slot.
 - setSlotValues(index, values): set the values of specific slot.
+- getValues(): values of all slots except divider slots.
+- setValues(values): set values(Array) of all slots except divider slots.
 
 Picker Slot Options:
 

@@ -316,10 +316,9 @@
             var momentumTranslate;
             if (duration < 300) {
               momentumTranslate = currentTranslate + velocityTranslate * momentumRatio;
-              momentumTranslate = Math.max(Math.min(momentumTranslate, dragState.range[1]), dragState.range[0]);
             }
 
-            dragState = {};
+            var dragRange = dragState.range;
 
             Vue.nextTick(() => {
               var translate;
@@ -329,6 +328,8 @@
                 translate = Math.round(currentTranslate / ITEM_HEIGHT) * ITEM_HEIGHT;
               }
 
+              translate = Math.max(Math.min(translate, dragRange[1]), dragRange[0]);
+
               translateUtil.translateElement(el, null, translate);
 
               this.value = this.translate2Value(translate);
@@ -337,6 +338,8 @@
                 this.planUpdateRotate();
               }
             });
+
+            dragState = {};
           }
         });
       },
