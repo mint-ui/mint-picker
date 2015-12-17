@@ -85,8 +85,8 @@
 
   .picker-3d .picker-items {
     overflow: hidden;
-    -webkit-perspective: 1200px;
-    perspective: 1200px
+    -webkit-perspective: 900px;
+    perspective: 900px;
   }
 
   .picker-3d .picker-item,
@@ -125,6 +125,11 @@
   };
 
   const ITEM_HEIGHT = 36;
+  const VISIBLE_ITEMS_ANGLE_MAP = {
+    3: -45,
+    5: -20,
+    7: -15
+  };
 
   export default {
     props: {
@@ -229,15 +234,16 @@
           currentTranslate = translateUtil.getElementTranslate(wrapper).top;
         }
 
+        var itemsFit = Math.ceil(this.visibleItemCount / 2);
+        var angleUnit = VISIBLE_ITEMS_ANGLE_MAP[this.visibleItemCount] || -20;
+
         [].forEach.call(pickerItems, (item, index) => {
           var itemOffsetTop = index * ITEM_HEIGHT;
           var translateOffset = dragRange[1] - currentTranslate;
           var itemOffset = itemOffsetTop - translateOffset;
           var percentage = itemOffset / ITEM_HEIGHT;
 
-          var itemsFit = Math.ceil(this.visibleItemCount / 2);
-
-          var angle = (-20 * percentage);
+          var angle = angleUnit * percentage;
           if (angle > 180) angle = 180;
           if (angle < -180) angle = -180;
 
