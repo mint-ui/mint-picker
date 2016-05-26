@@ -1,20 +1,15 @@
 {
-  "name": "vue-picker",
-  "version": "0.0.4",
+  "name": "mint-picker",
+  "version": "0.0.1",
   "description": "A multi-slot picker based on vue.js.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test",
-    "prepublish": "cp src/*.vue lib & node_modules/babel-cli/bin/babel.js src --out-dir lib"
+    "build": "cooking build",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ElemeFE/vue-picker.git"
-  },
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
+    "url": "https://github.com/mint-ui/mint-picker.git"
   },
   "keywords": [
     "picker",
@@ -23,18 +18,9 @@
   ],
   "author": "long.zhang@ele.me",
   "license": "MIT",
-  "peerDependencies": {
-    "vue": "^1.0.10",
-    "wind-dom": "0.0.3"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.3.15",
-    "babel-core": "^6.3.15",
-    "babel-loader": "^6.2.0",
-    "babel-preset-es2015": "^6.3.13",
-    "webpack": "^1.12.9"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "raf.js": "0.0.4"
+    "raf.js": "0.0.4",
+    "wind-dom": "0.0.3"
   }
 }

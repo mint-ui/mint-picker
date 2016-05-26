@@ -167,7 +167,7 @@
         animationFrameId: null
       };
     },
-    
+
     computed: {
       classNames() {
         const PREFIX = 'picker-slot-';
@@ -222,7 +222,7 @@
         return this.values[index];
       },
 
-      updateRotate: function (currentTranslate, pickerItems) {
+      updateRotate: function(currentTranslate, pickerItems) {
         var dragRange = this.dragRange;
         var wrapper = this.$els.wrapper;
 
@@ -257,7 +257,7 @@
         });
       },
 
-      planUpdateRotate: function () {
+      planUpdateRotate: function() {
         var el = this.$els.wrapper;
         cancelAnimationFrame(this.animationFrameId);
 

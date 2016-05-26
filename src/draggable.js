@@ -19,8 +19,6 @@ var fixEvent = function(event) {
   event.pageY = scrollTop + event.clientY;
 };
 
-
-
 export default function(element, options) {
   var moveFn = function(event) {
     if (isIE8) {

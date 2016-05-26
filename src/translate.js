@@ -28,11 +28,12 @@ if (helperElem.style[perspectiveProperty] !== undefined) {
   translate3d = true;
 }
 
-var getTranslate = function (element) {
+var getTranslate = function(element) {
   var result = {left: 0, top: 0};
   if (element === null || element.style === null) return result;
 
-  var transform = element.style[transformProperty], matches = /translate\(\s*(-?\d+(\.?\d+?)?)px,\s*(-?\d+(\.\d+)?)px\)\s*translateZ\(0px\)/g.exec(transform);
+  var transform = element.style[transformProperty];
+  var matches = /translate\(\s*(-?\d+(\.?\d+?)?)px,\s*(-?\d+(\.\d+)?)px\)\s*translateZ\(0px\)/g.exec(transform);
   if (matches) {
     result.left = +matches[1];
     result.top = +matches[3];
@@ -41,7 +42,7 @@ var getTranslate = function (element) {
   return result;
 };
 
-var translateElement = function (element, x, y) {
+var translateElement = function(element, x, y) {
   if (x === null && y === null) return;
 
   if (element === null || element.style === null) return;
@@ -67,7 +68,7 @@ var translateElement = function (element, x, y) {
   }
 };
 
-var cancelTranslateElement = function (element) {
+var cancelTranslateElement = function(element) {
   if (element === null || element.style === null) return;
   var transformValue = element.style[transformProperty];
   if (transformValue) {
