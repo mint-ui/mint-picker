@@ -1,3 +1,2 @@
-import Vue from 'vue';
-
-Vue.component('Picker', require('./picker.vue'));
+import Picker from './picker.vue';
+export default Picker;
