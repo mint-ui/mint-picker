@@ -1,74 +1,48 @@
-import { on, off } from 'wind-dom';
-
-var isDragging = false;
-
-var isIE8 = Number(document.documentMode) < 9;
-
-var isTouch = 'ontouchstart' in window;
-
-var startEvent = isTouch ? 'touchstart' : 'mousedown';
-var moveEvent = isTouch ? 'touchmove' : 'mousemove';
-var endEvent = isTouch ? 'touchend' : 'mouseup';
-
-var fixEvent = function(event) {
-  var scrollTop = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0);
-  var scrollLeft = Math.max(window.scrollX || 0, document.documentElement.scrollLeft || 0);
-
-  event.target = event.srcElement;
-  event.pageX = scrollLeft + event.clientX;
-  event.pageY = scrollTop + event.clientY;
-};
+let isDragging = false;
+const supportTouch = 'ontouchstart' in window;
 
 export default function(element, options) {
-  var moveFn = function(event) {
-    if (isIE8) {
-      fixEvent(event);
-    }
+  const moveFn = function(event) {
     if (options.drag) {
-      if (isTouch) {
-        options.drag(event.touches[0]);
-      } else {
-        options.drag(event);
-      }
+      options.drag(supportTouch ? event.changedTouches[0] || event.touches[0] : event);
     }
   };
-  var upFn = function(event) {
-    if (isIE8) {
-      fixEvent(event);
+
+  const endFn = function(event) {
+    if (!supportTouch) {
+      document.removeEventListener('mousemove', moveFn);
+      document.removeEventListener('mouseup', endFn);
     }
-    off(document, moveEvent, moveFn);
-    off(document, endEvent, upFn);
     document.onselectstart = null;
     document.ondragstart = null;
 
     isDragging = false;
 
     if (options.end) {
-      if (isTouch) {
-        options.end(event.touches[0]);
-      } else {
-        options.end(event);
-      }
+      options.end(supportTouch ? event.changedTouches[0] || event.touches[0] : event);
     }
   };
-  on(element, startEvent, function(event) {
-    if (isIE8) {
-      fixEvent(event);
-    }
+
+  element.addEventListener(supportTouch ? 'touchstart' : 'mousedown', function(event) {
     if (isDragging) return;
     document.onselectstart = function() { return false; };
     document.ondragstart = function() { return false; };
 
-    on(document, moveEvent, moveFn);
-    on(document, endEvent, upFn);
+    if (!supportTouch) {
+      document.addEventListener('mousemove', moveFn);
+      document.addEventListener('mouseup', endFn);
+    }
     isDragging = true;
 
     if (options.start) {
-      if (isTouch) {
-        options.start(event.touches[0]);
-      } else {
-        options.start(event);
-      }
+      event.preventDefault();
+      options.start(supportTouch ? event.changedTouches[0] || event.touches[0] : event);
     }
   });
-}
+
+  if (supportTouch) {
+    element.addEventListener('touchmove', moveFn);
+    element.addEventListener('touchend', endFn);
+    element.addEventListener('touchcancel', endFn);
+  }
+};

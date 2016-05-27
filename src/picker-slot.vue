@@ -85,8 +85,8 @@
 
   .picker-3d .picker-items {
     overflow: hidden;
-    -webkit-perspective: 900px;
-    perspective: 900px;
+    -webkit-perspective: 700px;
+    perspective: 700px;
   }
 
   .picker-3d .picker-item,
