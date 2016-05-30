@@ -2,7 +2,7 @@
   <div class="picker" :class="{ 'picker-3d': rotateEffect }">
     <div class="picker-toolbar" v-if="showToolbar"><slot></slot></div>
     <div class="picker-items">
-      <slots v-ref:slots></slots>
+      <picker-slot v-for="slot in slots" :values="slot.values || []" :text-align="slot.textAlign || 'center'" :visible-item-count="visibleItemCount" :class-name="slot.className" :flex="slot.flex" :value.sync="values[slot.valueIndex]" :rotate-effect="rotateEffect" :divider="slot.divider" :content="slot.content"></picker-slot>
       <div class="picker-center-highlight"></div>
     </div>
   </div>
@@ -93,18 +93,15 @@
 
     beforeCompile() {
       var slots = this.slots || [];
+      this.values = [];
       var values = this.values;
-
-      if (values.length !== slots.length) {
-        values = this.values = [];
-        var valueIndexCount = 0;
-        slots.forEach(function(slot) {
-          if (!slot.divider) {
-            slot.valueIndex = valueIndexCount++;
-            values[slot.valueIndex] = (slot.values || [])[0];
-          }
-        });
-      }
+      var valueIndexCount = 0;
+      slots.forEach(function(slot) {
+        if (!slot.divider) {
+          slot.valueIndex = valueIndexCount++;
+          values[slot.valueIndex] = (slot.values || [])[0];
+        }
+      });
     },
 
     methods: {
@@ -112,7 +109,7 @@
         var slots = this.slots || [];
         var count = 0;
         var target;
-        var children = this.$refs.slots.$children;
+        var children = this.$children;
 
         slots.forEach(function(slot, index) {
           if (!slot.divider) {
@@ -193,31 +190,7 @@
     },
 
     components: {
-      Slots: {
-        template: '',
-        components: {
-          PickerSlot: require('./picker-slot.vue')
-        },
-        created() {
-          var parent = this.$parent;
-          var slots = parent.slots;
-          var values = parent.values;
-          var template = '';
-          var valueIndexCount = 0;
-
-          slots.forEach(function(slot, index) {
-            if (!slot.divider) {
-              values[valueIndexCount] = (slot.values || [])[0];
-              template += `<picker-slot :values="$parent.slots[${index}].values || []" :text-align="$parent.slots[${index}].textAlign || 'center'" :visible-item-count="$parent.visibleItemCount" :class-name="$parent.slots[${index}].className" :flex="$parent.slots[${index}].flex" :value.sync="$parent.values[${valueIndexCount}]"  ${ parent.rotateEffect ? 'rotate-effect' : '' } ></picker-slot>`;
-              valueIndexCount++;
-            } else {
-              template += `<picker-slot divider :content="$parent.slots[${index}].content"></picker-slot>`;
-            }
-          });
-
-          this.$options.template = template;
-        }
-      }
+      PickerSlot: require('./picker-slot.vue')
     }
   };
 </script>

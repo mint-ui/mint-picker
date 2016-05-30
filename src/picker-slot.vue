@@ -223,6 +223,7 @@
       },
 
       updateRotate: function(currentTranslate, pickerItems) {
+        if (this.divider) return;
         var dragRange = this.dragRange;
         var wrapper = this.$els.wrapper;
 
