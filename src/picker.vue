@@ -79,7 +79,7 @@
       },
       showToolbar: {
         type: Boolean,
-        default: true
+        default: false
       },
       visibleItemCount: {
         type: Number,

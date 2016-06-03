@@ -72,7 +72,7 @@ Picker Options:
 | Option | Description |
 | ----- | ----- |
 | slots | Array(default: []) the slot config of picker. |
-| showToolbar | Boolean(default: true) show a toolbar on top of picker when showToolbar is true. |
+| showToolbar | Boolean(default: false) show a toolbar on top of picker when showToolbar is true. |
 | visibleItemCount | Number(default: 5) visible item count of each slot. |
 | rotateEffect | Boolean(default: false) use rotate effect on picker item when rotateEffect is true. |
 
