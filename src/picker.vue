@@ -73,6 +73,8 @@
 
 <script type="text/ecmascript-6" lang="babel">
   export default {
+    name: 'mt-picker',
+
     props: {
       slots: {
         type: Array
