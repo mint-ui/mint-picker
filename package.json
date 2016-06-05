@@ -1,6 +1,6 @@
 {
   "name": "mint-picker",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A multi-slot picker based on vue.js.",
   "main": "lib/index.js",
   "scripts": {
