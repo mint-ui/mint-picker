@@ -18,7 +18,10 @@
   ],
   "author": "long.zhang@ele.me",
   "license": "MIT",
-  "devDependencies": {},
+  "devDependencies": {
+    "vue": "^2.0.3",
+    "cooking-vue2": "^0.2.3"
+  },
   "dependencies": {
     "raf.js": "0.0.4",
     "wind-dom": "0.0.3"

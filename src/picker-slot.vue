@@ -1,7 +1,7 @@
 <template>
-  <div class="picker-slot {{classNames}}" :style="{ flex: flex }">
-    <div v-if="!divider" v-el:wrapper class="picker-slot-wrapper" :class="{ dragging: dragging }" :style="{ height: contentHeight + 'px' }">
-      <div class="picker-item" v-for="itemValue in values" :class="{ 'picker-selected': itemValue === value }">{{ itemValue }}</div>
+  <div class="picker-slot" :class="classNames" :style="flexStyle">
+    <div v-if="!divider" ref="wrapper" class="picker-slot-wrapper" :class="{ dragging: dragging }" :style="{ height: contentHeight + 'px' }">
+      <div class="picker-item" v-for="itemValue in mutatingValues" :class="{ 'picker-selected': itemValue === currentValue }">{{ itemValue }}</div>
     </div>
     <div v-if="divider">{{ content }}</div>
   </div>
@@ -42,8 +42,8 @@
   .picker-slot-wrapper {
     -webkit-transition-duration: 0.3s;
     transition-duration: 0.3s;
-    -webkit-transition-timing-function: ease-out;
-    transition-timing-function: ease-out
+    transition-timing-function: ease-out;
+    backface-visibility: hidden;
   }
 
   .picker-slot-wrapper.dragging,
@@ -65,8 +65,8 @@
     top: 0;
     width: 100%;
     box-sizing: border-box;
-    -webkit-transition-duration: .3s;
-    transition-duration: .3s
+    transition-duration: .3s;
+    backface-visibility: hidden;
   }
 
   .picker-slot-absolute .picker-item {
@@ -110,12 +110,13 @@
   }
 </style>
 
-<script type="text/ecmascript-6" lang="babel">
-  import Vue from 'vue';
+<script type="text/babel">
   import draggable from './draggable';
   import translateUtil from './translate';
-  import { addClass, removeClass, once } from 'wind-dom';
-  require('raf.js');
+  import { once } from 'wind-dom/src/event';
+  import { addClass, removeClass } from 'wind-dom/src/class';
+  import emitter from './emitter';
+  import 'raf.js';
 
   var rotateElement = function(element, angle) {
     if (!element) return;
@@ -163,12 +164,24 @@
 
     data() {
       return {
+        currentValue: this.value,
+        mutatingValues: this.values,
         dragging: false,
         animationFrameId: null
       };
     },
 
+    mixins: [emitter],
+
     computed: {
+      flexStyle() {
+        return {
+          'flex': this.flex,
+          '-webkit-box-flex': this.flex,
+          '-moz-box-flex': this.flex,
+          '-ms-flex': this.flex
+        };
+      },
       classNames() {
         const PREFIX = 'picker-slot-';
         let resultArray = [];
@@ -194,10 +207,10 @@
         return ITEM_HEIGHT * this.visibleItemCount;
       },
       valueIndex() {
-        return this.values.indexOf(this.value);
+        return this.mutatingValues.indexOf(this.currentValue);
       },
       dragRange() {
-        var values = this.values;
+        var values = this.mutatingValues;
         var visibleItemCount = this.visibleItemCount;
 
         return [ -ITEM_HEIGHT * (values.length - Math.ceil(visibleItemCount / 2)), ITEM_HEIGHT * Math.floor(visibleItemCount / 2) ];
@@ -206,7 +219,7 @@
 
     methods: {
       value2Translate(value) {
-        var values = this.values;
+        var values = this.mutatingValues;
         var valueIndex = values.indexOf(value);
         var offset = Math.floor(this.visibleItemCount / 2);
 
@@ -219,13 +232,13 @@
         translate = Math.round(translate / ITEM_HEIGHT) * ITEM_HEIGHT;
         var index = -(translate - Math.floor(this.visibleItemCount / 2) * ITEM_HEIGHT) / ITEM_HEIGHT;
 
-        return this.values[index];
+        return this.mutatingValues[index];
       },
 
       updateRotate: function(currentTranslate, pickerItems) {
         if (this.divider) return;
         var dragRange = this.dragRange;
-        var wrapper = this.$els.wrapper;
+        var wrapper = this.$refs.wrapper;
 
         if (!pickerItems) {
           pickerItems = wrapper.querySelectorAll('.picker-item');
@@ -259,7 +272,7 @@
       },
 
       planUpdateRotate: function() {
-        var el = this.$els.wrapper;
+        var el = this.$refs.wrapper;
         cancelAnimationFrame(this.animationFrameId);
 
         this.animationFrameId = requestAnimationFrame(() => {
@@ -273,10 +286,10 @@
       },
 
       initEvents() {
-        var el = this.$els.wrapper;
+        var el = this.$refs.wrapper;
         var dragState = {};
 
-        var velocityTranslate, velocityTime, prevTranslate, pickerItems;
+        var velocityTranslate, prevTranslate, pickerItems;
 
         draggable(el, {
           start: (event) => {
@@ -304,7 +317,6 @@
             translateUtil.translateElement(el, null, translate);
 
             velocityTranslate = translate - prevTranslate || translate;
-            velocityTime = Date.now();
 
             prevTranslate = translate;
 
@@ -327,7 +339,7 @@
 
             var dragRange = dragState.range;
 
-            Vue.nextTick(() => {
+            this.$nextTick(() => {
               var translate;
               if (momentumTranslate) {
                 translate = Math.round(momentumTranslate / ITEM_HEIGHT) * ITEM_HEIGHT;
@@ -339,7 +351,7 @@
 
               translateUtil.translateElement(el, null, translate);
 
-              this.value = this.translate2Value(translate);
+              this.currentValue = this.translate2Value(translate);
 
               if (this.rotateEffect) {
                 this.planUpdateRotate();
@@ -352,8 +364,8 @@
       },
 
       doOnValueChange() {
-        var value = this.value;
-        var wrapper = this.$els.wrapper;
+        var value = this.currentValue;
+        var wrapper = this.$refs.wrapper;
 
         translateUtil.translateElement(wrapper, null, this.value2Translate(value));
       },
@@ -370,8 +382,9 @@
       }
     },
 
-    ready() {
+    mounted() {
       this.ready = true;
+      this.$emit('input', this.currentValue);
 
       if (!this.divider) {
         this.initEvents();
@@ -384,22 +397,27 @@
     },
 
     watch: {
-      values(newVal) {
+      values(val) {
+        this.mutatingValues = val;
+      },
+
+      mutatingValues(val) {
         if (this.valueIndex === -1) {
-          this.value = (newVal || [])[0];
+          this.currentValue = (val || [])[0];
         }
         if (this.rotateEffect) {
-          Vue.nextTick(() => {
+          this.$nextTick(() => {
             this.doOnValuesChange();
           });
         }
       },
-      value() {
+      currentValue(val) {
         this.doOnValueChange();
         if (this.rotateEffect) {
           this.planUpdateRotate();
         }
-        this.$dispatch('slotValueChange', this);
+        this.$emit('input', val);
+        this.dispatch('picker', 'slotValueChange', this);
       }
     }
   };
